@@ -73,17 +73,62 @@
  *   // ]
  */
 export function orderChai(type, quantity) {
-  // Your code here
+    const prices = { cutting: 10, special: 20, ginger: 15, masala: 25 };
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            const validTypes = ["cutting", "special", "ginger", "masala"];
+            if (!validTypes.includes(type)) {
+                reject(new Error("Yeh chai available nahi hai!"));
+            }
+            if (typeof quantity !== "number" || quantity <= 0) {
+                reject(new Error("Kitni chai chahiye bhai?"));
+            }
+            resolve({ type, quantity, total: quantity * prices[type] });
+        }, 100);
+    });
 }
 
 export function checkIngredients(ingredient) {
-  // Your code here
+    const ingredientList = ["tea", "milk", "sugar", "ginger", "cardamom"];
+    return new Promise((resolve, reject) => {
+        if (!ingredientList.includes(ingredient)) {
+            reject(new Error(`${ingredient} khatam ho gaya!`));
+        }
+        resolve({ ingredient, available: true });
+    });
 }
 
 export function prepareChaiWithTimeout(type, timeoutMs) {
-  // Your code here
+    const timeoutPromise = new Promise((resolve, reject) => {
+        setTimeout(() => {
+            reject(new Error("Bahut der ho gayi, chai nahi bani!"));
+        }, timeoutMs);
+    });
+    const orderChaiPromise = orderChai(type, 1);
+    return Promise.race([orderChaiPromise, timeoutPromise]);
 }
 
 export function processChaiQueue(orders) {
-  // Your code here
+    if (orders.length === 0) {
+        return new Promise((resolve) => {
+            resolve([]);
+        });
+    }
+
+    const promises = orders.map(async (order) => {
+        try {
+            const res = await orderChai(order.type, order.quantity);
+            return {
+                status: "fulfilled",
+                value: res,
+            };
+        } catch (err) {
+            return {
+                status: "rejected",
+                reason: err.message,
+            };
+        }
+    });
+
+    return Promise.all(promises);
 }

@@ -74,13 +74,78 @@
  *   const boundFn = fixWithBind(cart);         // properly bound sellItem
  */
 export function createSamosaCart(ownerName, location) {
-  // Your code here
+    const sellItem = function (itemName, quantity) {
+        if (!this.menu[itemName] || quantity <= 0 || itemName == null)
+            return -1;
+
+        const total = quantity * this.menu[itemName];
+        this.sales.push({
+            item: itemName,
+            quantity,
+            total,
+        });
+
+        return total;
+    };
+    const getDailySales = function () {
+        if (this.sales.length === 0) return 0;
+        let total = 0;
+        this.sales.forEach((sale) => {
+            total += sale.total;
+        });
+        return total;
+    };
+
+    const getPopularItem = function () {
+        if (this.sales.length === 0) return null;
+        const itemCounts = {};
+        this.sales.forEach((sale) => {
+            if (itemCounts[sale.item]) {
+                itemCounts[sale.item] += sale.quantity;
+            } else {
+                itemCounts[sale.item] = sale.quantity;
+            }
+        });
+
+        let popularItem = "";
+        let popularQuantity = 0;
+        for (let item in itemCounts) {
+            if (itemCounts[item] > popularQuantity) {
+                popularItem = item;
+                popularQuantity = itemCounts[item];
+            }
+        }
+        return popularItem;
+    };
+
+    // const moveTo = ;
+    const resetDay = function () {
+        this.sales = [];
+        return `${this.owner} ka naya din shuru!`;
+    };
+
+    return {
+        owner: ownerName,
+        location,
+        menu: { samosa: 15, jalebi: 20, kachori: 25 },
+        sales: [],
+        sellItem,
+        getDailySales,
+        getPopularItem,
+        moveTo: function (newLocation) {
+            this.location = newLocation;
+            return `${this.owner} ka cart ab ${newLocation} pe hai!`;
+        },
+        resetDay,
+    };
 }
 
 export function demonstrateThisLoss(cart) {
-  // Your code here
+    const { sellItem } = cart;
+    return sellItem;
 }
 
 export function fixWithBind(cart) {
-  // Your code here
+    const fun = cart.sellItem.bind(cart);
+    return fun;
 }
